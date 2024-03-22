@@ -1,0 +1,54 @@
+--Multiple player support required
+--Position needs amending
+
+function widget:GetInfo()
+    return {
+        name = "InputBasedAPM",
+        desc = "Tracks APM based on key/mouse inputs",
+        author = "Boomynov",
+        date = "2024-03-21",
+        license = "Yaaaargh",
+        layer = 0,
+        enabled = true
+    }
+end
+
+local accumulatedInputs = 0
+local gameStartTime = os.clock()
+local apm = 0
+
+-- Key press tracker
+function widget:KeyPress(key, mods, isRepeat)
+    if not isRepeat then
+        accumulatedInputs = accumulatedInputs + 1
+    end
+    return false
+end
+
+-- Mouse click tracker
+function widget:MousePress(x, y, button)
+    accumulatedInputs = accumulatedInputs + 1
+    return false
+end
+
+--Update functionality
+function widget:Update()
+    local elapsedTime = (os.clock() - gameStartTime) / 60 
+    apm = accumulatedInputs / math.max(elapsedTime, 1/60) 
+end
+
+--Draw all the information!
+function widget:DrawScreen()
+    local viewWidth, _ = Spring.GetViewGeometry()
+    local playerName = Spring.GetPlayerInfo(Spring.GetMyPlayerID())
+    local r, g, b, _ = Spring.GetTeamColor(Spring.GetMyTeamID())
+
+    local xPosition = viewWidth - 500 
+    local yPosition = 100 
+
+--Yoink team / player? colour to display info in appropriate colour
+    gl.Color(r, g, b, 1) 
+    local displayText = string.format("%s - APM: %.2f", playerName, apm)
+    gl.Text(displayText, xPosition, yPosition, 14, "or") 
+    gl.Color(1, 1, 1, 1) 
+end      
